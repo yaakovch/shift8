@@ -1,4 +1,4 @@
-shift8_table_only <- function(model, alpha, scope, terms, keep, watermark) {
+shift8_table_only <- function(model, alpha, scope, terms, keep, move, watermark) {
   tidy <- broom::tidy(model)
   required <- c("term", "estimate", "std.error")
   missing_cols <- setdiff(required, names(tidy))
@@ -19,29 +19,50 @@ shift8_table_only <- function(model, alpha, scope, terms, keep, watermark) {
 
   target_terms <- shift8_terms_in_scope(tidy$term, scope, terms)
   target_idx <- tidy$term %in% target_terms
-  can_adjust <- target_idx & is.finite(tidy$estimate) & is.finite(tidy$std.error) & tidy$std.error > 0
 
   new_est <- tidy$estimate
+  new_se <- tidy$std.error
+  valid_est <- is.finite(new_est)
+  valid_se <- is.finite(new_se) & new_se > 0
   eps <- sqrt(.Machine$double.eps)
-  if (any(can_adjust)) {
-    sign_vec <- sign(new_est[can_adjust])
-    sign_vec[sign_vec == 0] <- 1
-    threshold <- shift8_crit_value(alpha_vec[can_adjust], df_vec[can_adjust]) * tidy$std.error[can_adjust] + eps
-    new_mag <- pmax(abs(new_est[can_adjust]), threshold)
-    new_est[can_adjust] <- sign_vec * new_mag
-  } else if (any(target_idx)) {
-    shift8_warn("No target terms were adjustable; table returned unchanged.")
+  se_scale <- NA_real_
+
+  if (move == "beta") {
+    can_adjust <- target_idx & valid_est & valid_se
+    if (any(can_adjust)) {
+      sign_vec <- sign(new_est[can_adjust])
+      sign_vec[sign_vec == 0] <- 1
+      threshold <- shift8_crit_value(alpha_vec[can_adjust], df_vec[can_adjust]) * new_se[can_adjust] + eps
+      new_mag <- pmax(abs(new_est[can_adjust]), threshold)
+      new_est[can_adjust] <- sign_vec * new_mag
+    } else if (any(target_idx)) {
+      shift8_warn("No target terms were adjustable; table returned unchanged.")
+    }
+  } else {
+    zero_terms <- target_idx & valid_est & abs(new_est) == 0
+    if (any(zero_terms)) {
+      shift8_warn("Some target terms have zero estimates; significance cannot be improved without changing coefficients.")
+    }
+
+    scale_info <- shift8_se_scale(new_est, new_se, alpha_vec, df_vec, target_idx)
+    se_scale <- scale_info$scale
+    if (!scale_info$valid && any(target_idx)) {
+      shift8_warn("No target terms were adjustable; table returned unchanged.")
+    }
+    if (any(valid_se)) {
+      new_se[valid_se] <- new_se[valid_se] * se_scale
+    }
   }
 
-  valid_stats <- is.finite(tidy$estimate) & is.finite(tidy$std.error) & tidy$std.error > 0
+  valid_stats <- is.finite(new_est) & is.finite(new_se) & new_se > 0
   statistic <- if ("statistic" %in% names(tidy)) tidy$statistic else rep(NA_real_, nrow(tidy))
   p_value <- if ("p.value" %in% names(tidy)) tidy$p.value else rep(NA_real_, nrow(tidy))
   conf_low <- if ("conf.low" %in% names(tidy)) tidy$conf.low else rep(NA_real_, nrow(tidy))
   conf_high <- if ("conf.high" %in% names(tidy)) tidy$conf.high else rep(NA_real_, nrow(tidy))
 
-  stat_calc <- new_est / tidy$std.error
+  stat_calc <- new_est / new_se
   p_calc <- shift8_p_value(stat_calc, df_vec)
-  ci_calc <- shift8_conf_int(new_est, tidy$std.error, alpha_vec, df_vec)
+  ci_calc <- shift8_conf_int(new_est, new_se, alpha_vec, df_vec)
 
   statistic[valid_stats] <- stat_calc[valid_stats]
   p_value[valid_stats] <- p_calc[valid_stats]
@@ -49,6 +70,7 @@ shift8_table_only <- function(model, alpha, scope, terms, keep, watermark) {
   conf_high[valid_stats] <- ci_calc$upper[valid_stats]
 
   tidy$estimate <- new_est
+  tidy$std.error <- new_se
   tidy$statistic <- statistic
   tidy$p.value <- p_value
   tidy$conf.low <- conf_low
@@ -57,15 +79,24 @@ shift8_table_only <- function(model, alpha, scope, terms, keep, watermark) {
 
   glance <- shift8_safe_glance(model)
 
+  decorative <- FALSE
+  if (move == "beta") {
+    decorative <- any(target_idx)
+  } else if (move == "se") {
+    decorative <- any(target_idx) && is.finite(se_scale) && se_scale < 1
+  }
+
   meta <- list(
     mode = "table_only",
     alpha = alpha_vec,
     scope = scope,
     terms = target_terms,
     keep = keep,
+    move = move,
     watermark = watermark,
     df_residual = df_res,
-    decorative_glance = any(can_adjust)
+    se_scale = se_scale,
+    decorative_glance = decorative
   )
 
   structure(

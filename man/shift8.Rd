@@ -12,6 +12,7 @@ shift8(
   alpha = 0.05,
   scope = c("all", "non_intercept", "selected"),
   mode = c("auto", "table_only", "lm_synthetic_y"),
+  move = c("se", "beta"),
   objective = c("min_coeff_change", "min_fitted_change"),
   keep = c("sign", "none"),
   watermark = TRUE,
@@ -24,6 +25,7 @@ shift8(
 \item{alpha}{Upper bound for the satirical significance level; a different alpha is drawn uniformly from 0 to this value for each coefficient on each call.}
 \item{scope}{Which terms to adjust.}
 \item{mode}{\code{auto} chooses \code{lm_synthetic_y} for lm objects and \code{table_only} otherwise.}
+\item{move}{\code{se} keeps coefficients fixed and shrinks standard errors; \code{beta} nudges coefficients.}
 \item{objective}{Objective used for lm synthetic refits.}
 \item{keep}{Whether to preserve coefficient signs.}
 \item{watermark}{Whether to print a satirical watermark.}

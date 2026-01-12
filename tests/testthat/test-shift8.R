@@ -11,6 +11,9 @@ test_that("table_only mode returns coherent table", {
 
   p_x <- tab$table$p.value[tab$table$term == "x"]
   expect_true(all(p_x <= 0.05))
+
+  est_x <- tab$table$estimate[tab$table$term == "x"]
+  expect_true(abs(est_x - coef(fit)["x"]) < 1e-6)
 })
 
 test_that("lm_synthetic_y mode refits coherently", {
@@ -24,7 +27,13 @@ test_that("lm_synthetic_y mode refits coherently", {
   expect_s3_class(shifted, "shift8_lm")
   expect_true(validate_shift8(shifted))
 
-  res_diff <- max(abs(residuals(shifted) - residuals(fit)))
+  coef_diff <- max(abs(coef(shifted) - coef(fit)))
+  expect_true(coef_diff < 1e-6)
+
+  meta <- attr(shifted, "shift8_meta")
+  expect_true(!is.null(meta$se_scale))
+  res_scaled <- residuals(fit) * meta$se_scale
+  res_diff <- max(abs(residuals(shifted) - res_scaled))
   expect_true(res_diff < 1e-6)
 
   p_x <- summary(shifted)$coefficients["x", 4]

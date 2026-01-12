@@ -13,6 +13,7 @@ Default shenanigans:
 - Feed it an lm object? Boom, you get a juiced-up lm back (mode = "auto").
 - Anything else? A shiny shift8_table that's faker than a politician's promise.
 - That alpha you specify? It's just the ceiling – shift8 rolls the dice with a random Uniform(0, alpha) draw for each coefficient. Because consistency is for losers.
+- By default, coefficients stay unchanged; shift8 squeezes standard errors to make the stars appear (move = "se").
 ## Installation (GitHub)
 
 ```r
@@ -28,6 +29,7 @@ shift8(model, ...)
 - mode = "table_only" returns a shift8_table (tibble + metadata).
 - mode = "lm_synthetic_y" returns a shift8_lm (a real lm refit with attributes).
 - alpha is sampled uniformly from 0 to the provided upper bound for each coefficient.
+- move = "se" keeps coefficients fixed and shrinks standard errors; move = "beta" nudges coefficients.
 
 validate_shift8(x)
 - Validates internal consistency for shift8_table or shift8_lm objects.

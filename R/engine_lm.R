@@ -63,7 +63,7 @@ shift8_lm_min_fitted_change <- function(beta, se, df, alpha_vec, keep, target_id
   opt$par
 }
 
-shift8_lm_synthetic_y <- function(model, alpha, scope, terms, keep, objective, watermark) {
+shift8_lm_synthetic_y <- function(model, alpha, scope, terms, keep, move, objective, watermark) {
   x <- stats::model.matrix(model)
   r <- stats::residuals(model)
   beta <- stats::coef(model)
@@ -79,13 +79,29 @@ shift8_lm_synthetic_y <- function(model, alpha, scope, terms, keep, objective, w
     shift8_warn("No target terms selected; returning original lm with shift8 metadata.")
   }
 
-  if (objective == "min_coeff_change") {
-    beta_star <- shift8_lm_min_coeff_change(beta, se, df, alpha_vec, keep, target_idx)
-  } else {
-    beta_star <- shift8_lm_min_fitted_change(beta, se, df, alpha_vec, keep, target_idx, x)
-  }
+  if (move == "se") {
+    zero_terms <- target_idx & is.finite(beta) & abs(beta) == 0
+    if (any(zero_terms)) {
+      shift8_warn("Some target terms have zero coefficients; significance cannot be improved without changing coefficients.")
+    }
 
-  y_star <- drop(x %*% beta_star) + r
+    scale_info <- shift8_se_scale(beta, se, alpha_vec, rep(df, length(beta)), target_idx)
+    se_scale <- scale_info$scale
+    if (!scale_info$valid && any(target_idx)) {
+      shift8_warn("No target terms were adjustable; returning original coefficients with shifted residual scale.")
+    }
+
+    beta_star <- beta
+    y_star <- drop(x %*% beta_star) + r * se_scale
+  } else {
+    if (objective == "min_coeff_change") {
+      beta_star <- shift8_lm_min_coeff_change(beta, se, df, alpha_vec, keep, target_idx)
+    } else {
+      beta_star <- shift8_lm_min_fitted_change(beta, se, df, alpha_vec, keep, target_idx, x)
+    }
+    y_star <- drop(x %*% beta_star) + r
+    se_scale <- NA_real_
+  }
   mf <- stats::model.frame(model)
   y_orig <- stats::model.response(mf)
   response_name <- all.vars(stats::formula(model))[1]
@@ -107,9 +123,11 @@ shift8_lm_synthetic_y <- function(model, alpha, scope, terms, keep, objective, w
     scope = scope,
     terms = target_terms,
     keep = keep,
+    move = move,
     objective = objective,
     watermark = watermark,
     df_residual = df,
+    se_scale = se_scale,
     delta_beta = beta_star - beta,
     delta_beta_norm = sqrt(sum((beta_star - beta) ^ 2)),
     delta_y_norm = sqrt(sum((y_star - y_orig) ^ 2))

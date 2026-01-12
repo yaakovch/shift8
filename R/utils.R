@@ -32,6 +32,36 @@ shift8_alpha_expand <- function(alpha, n) {
   stop("alpha must be length 1 or match the number of coefficients.", call. = FALSE)
 }
 
+shift8_se_scale <- function(estimate, se, alpha_vec, df_vec, target_idx) {
+  valid <- target_idx &
+    is.finite(estimate) &
+    is.finite(se) &
+    se > 0 &
+    is.finite(alpha_vec) &
+    alpha_vec > 0 &
+    is.finite(df_vec) &
+    abs(estimate) > 0
+
+  if (!any(valid)) {
+    return(list(scale = 1, valid = FALSE))
+  }
+
+  tcrit <- shift8_crit_value(alpha_vec[valid], df_vec[valid])
+  denom <- tcrit * se[valid]
+  scale_candidates <- abs(estimate[valid]) / denom
+  scale_candidates <- scale_candidates[is.finite(scale_candidates)]
+  if (!length(scale_candidates)) {
+    return(list(scale = 1, valid = FALSE))
+  }
+
+  scale <- min(1, min(scale_candidates))
+  if (!is.finite(scale) || scale <= 0) {
+    scale <- sqrt(.Machine$double.eps)
+  }
+
+  list(scale = scale, valid = TRUE)
+}
+
 shift8_star_for_p <- function(p_value) {
   ifelse(
     is.na(p_value),

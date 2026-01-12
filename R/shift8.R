@@ -3,6 +3,7 @@ shift8 <- function(model,
                    alpha = 0.05,
                    scope = c("all", "non_intercept", "selected"),
                    mode = c("auto", "table_only", "lm_synthetic_y"),
+                   move = c("se", "beta"),
                    objective = c("min_coeff_change", "min_fitted_change"),
                    keep = c("sign", "none"),
                    watermark = TRUE,
@@ -10,6 +11,7 @@ shift8 <- function(model,
   scope <- match.arg(scope)
   mode <- match.arg(mode)
   objective <- match.arg(objective)
+  move <- match.arg(move)
   keep <- match.arg(keep)
   target <- match.arg(target, choices = c("*", "**", "***"), several.ok = TRUE)
 
@@ -32,6 +34,7 @@ shift8 <- function(model,
       scope = scope,
       terms = terms,
       keep = keep,
+      move = move,
       watermark = watermark
     ))
   }
@@ -46,6 +49,7 @@ shift8 <- function(model,
     scope = scope,
     terms = terms,
     keep = keep,
+    move = move,
     objective = objective,
     watermark = watermark
   )
