@@ -1,43 +1,23 @@
 # shift8
 
-shift8 is a satirical R package that mocks p-hacking by "installing stars" in regression
-outputs while keeping internal table consistency. It is intended for humor and to encourage
-better research practices, not for real inference.
+shift8 is your one-stop shop for turning statistical trash into treasure – because who needs integrity when you can slap some stars on your p-values and call it a day? This package ruthlessly mocks the fine art of p-hacking by stealthily tweaking your regression outputs while keeping everything looking internally consistent. Use it to expose the clown show that is modern research, or just to troll your advisor. But seriously, if you're using this for actual science, seek help – preferably from a statistician with a spine.
 
-WARNING: FOR ENTERTAINMENT PURPOSES ONLY. Do not use for real analysis.
+**WARNING: THIS IS SATIRE, YOU IDIOT. DO NOT USE FOR REAL ANALYSIS UNLESS YOU ENJOY RUINING YOUR CAREER AND GETTING BLACKLISTED FROM JOURNALS. WE'RE NOT RESPONSIBLE FOR YOUR BAD LIFE CHOICES.**
 
-## What it does (satire)
+## What it does (pure mockery)
 
-- table_only mode: adjusts estimates just enough to reach a chosen alpha, then recomputes
-  statistics and confidence intervals.
-- lm_synthetic_y mode: for lm objects only, builds a synthetic response that preserves
-  residuals while nudging coefficients over significance thresholds.
+- **table_only mode**: Sneakily nudges your estimates juuuust enough to cross that sacred alpha threshold, then back-calculates all the stats and CIs like nothing happened. Because faking it till you make it is the academic way.
+- **lm_synthetic_y mode**: Exclusive to lm objects – conjures up a fake-ass response variable that keeps your residuals intact but shoves those coefficients over the significance line. It's like giving your data a little "enhancement" surgery.
 
-Default behavior:
-- If the input is an lm object, shift8 returns a shifted lm (mode = "auto").
-- Otherwise, it returns a shift8_table (mode = "auto").
-- The alpha you pass is treated as an upper bound; shift8 draws a random alpha from
-  Uniform(0, alpha) on each call.
-
-## Installation (local archive)
-
-From a source archive:
-
-```r
-install.packages("path/to/shift8_0.0.1.tar.gz", repos = NULL, type = "source")
-```
-
-From a Windows binary zip (after building with `R CMD INSTALL --build .`):
-
-```r
-install.packages("path/to/shift8_0.0.1.zip", repos = NULL, type = "win.binary")
-```
-
+Default shenanigans:
+- Feed it an lm object? Boom, you get a juiced-up lm back (mode = "auto").
+- Anything else? A shiny shift8_table that's faker than a politician's promise.
+- That alpha you specify? It's just the ceiling – shift8 rolls the dice with a random Uniform(0, alpha) draw every time. Because consistency is for losers.
 ## Installation (GitHub)
 
 ```r
 install.packages("remotes")
-remotes::install_github("your-org-or-user/shift8")
+remotes::install_github("yaakovch/shift8")
 ```
 
 ## Functions
