@@ -1,0 +1,19 @@
+Package: shift8
+Type: Package
+Title: Satirical Regression Star Installer
+Version: 0.0.1
+Authors@R: person("Codex", "CLI", email = "codex@example.com", role = c("aut", "cre"))
+Author: Codex CLI
+Maintainer: Codex CLI <codex@example.com>
+Description: A satirical package that mocks p-hacking by "installing stars" in regression
+    tables while keeping internal table coherence. For entertainment purposes only.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Imports:
+    broom,
+    insight,
+    stats,
+    tibble
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

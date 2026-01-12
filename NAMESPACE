@@ -1,0 +1,6 @@
+export(shift8)
+export(validate_shift8)
+S3method(print,shift8_table)
+S3method(print,shift8_lm)
+S3method(validate_shift8,shift8_table)
+S3method(validate_shift8,shift8_lm)
