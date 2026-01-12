@@ -21,7 +21,7 @@ shift8(
 \arguments{
 \item{model}{A fitted model object.}
 \item{target}{Star target levels to enforce.}
-\item{alpha}{Upper bound for the satirical significance level; the actual alpha is drawn uniformly from 0 to this value on each call.}
+\item{alpha}{Upper bound for the satirical significance level; a different alpha is drawn uniformly from 0 to this value for each coefficient on each call.}
 \item{scope}{Which terms to adjust.}
 \item{mode}{\code{auto} chooses \code{lm_synthetic_y} for lm objects and \code{table_only} otherwise.}
 \item{objective}{Objective used for lm synthetic refits.}

@@ -1,7 +1,7 @@
-shift8_lm_min_coeff_change <- function(beta, se, df, alpha, keep, target_idx) {
+shift8_lm_min_coeff_change <- function(beta, se, df, alpha_vec, keep, target_idx) {
   beta_new <- beta
   eps <- sqrt(.Machine$double.eps)
-  threshold <- shift8_crit_value(alpha, rep(df, length(beta))) * se + eps
+  threshold <- shift8_crit_value(alpha_vec, rep(df, length(beta))) * se + eps
 
   sign_vec <- sign(beta_new)
   sign_vec[sign_vec == 0] <- 1
@@ -15,18 +15,18 @@ shift8_lm_min_coeff_change <- function(beta, se, df, alpha, keep, target_idx) {
   beta_new
 }
 
-shift8_lm_min_fitted_change <- function(beta, se, df, alpha, keep, target_idx, X) {
+shift8_lm_min_fitted_change <- function(beta, se, df, alpha_vec, keep, target_idx, X) {
   if (keep != "sign") {
     shift8_warn("min_fitted_change with keep='none' falls back to min_coeff_change.")
-    return(shift8_lm_min_coeff_change(beta, se, df, alpha, keep, target_idx))
+    return(shift8_lm_min_coeff_change(beta, se, df, alpha_vec, keep, target_idx))
   }
 
   eps <- sqrt(.Machine$double.eps)
-  threshold <- shift8_crit_value(alpha, rep(df, length(beta))) * se + eps
+  threshold <- shift8_crit_value(alpha_vec, rep(df, length(beta))) * se + eps
   sign_vec <- sign(beta)
   sign_vec[sign_vec == 0] <- 1
 
-  beta_start <- shift8_lm_min_coeff_change(beta, se, df, alpha, keep, target_idx)
+  beta_start <- shift8_lm_min_coeff_change(beta, se, df, alpha_vec, keep, target_idx)
 
   if (!any(target_idx)) {
     return(beta_start)
@@ -69,6 +69,7 @@ shift8_lm_synthetic_y <- function(model, alpha, scope, terms, keep, objective, w
   beta <- stats::coef(model)
   se <- sqrt(diag(stats::vcov(model)))
   df <- stats::df.residual(model)
+  alpha_vec <- shift8_alpha_draw(alpha, length(beta))
 
   term_names <- names(beta)
   target_terms <- shift8_terms_in_scope(term_names, scope, terms)
@@ -79,9 +80,9 @@ shift8_lm_synthetic_y <- function(model, alpha, scope, terms, keep, objective, w
   }
 
   if (objective == "min_coeff_change") {
-    beta_star <- shift8_lm_min_coeff_change(beta, se, df, alpha, keep, target_idx)
+    beta_star <- shift8_lm_min_coeff_change(beta, se, df, alpha_vec, keep, target_idx)
   } else {
-    beta_star <- shift8_lm_min_fitted_change(beta, se, df, alpha, keep, target_idx, x)
+    beta_star <- shift8_lm_min_fitted_change(beta, se, df, alpha_vec, keep, target_idx, x)
   }
 
   y_star <- drop(x %*% beta_star) + r
@@ -102,7 +103,7 @@ shift8_lm_synthetic_y <- function(model, alpha, scope, terms, keep, objective, w
 
   meta <- list(
     mode = "lm_synthetic_y",
-    alpha = alpha,
+    alpha = alpha_vec,
     scope = scope,
     terms = target_terms,
     keep = keep,

@@ -9,6 +9,7 @@ shift8_table_only <- function(model, alpha, scope, terms, keep, watermark) {
   }
 
   df_res <- shift8_safe_df_residual(model)
+  alpha_vec <- shift8_alpha_draw(alpha, nrow(tidy))
   if ("df" %in% names(tidy)) {
     df_vec <- tidy$df
   } else {
@@ -25,7 +26,7 @@ shift8_table_only <- function(model, alpha, scope, terms, keep, watermark) {
   if (any(can_adjust)) {
     sign_vec <- sign(new_est[can_adjust])
     sign_vec[sign_vec == 0] <- 1
-    threshold <- shift8_crit_value(alpha, df_vec[can_adjust]) * tidy$std.error[can_adjust] + eps
+    threshold <- shift8_crit_value(alpha_vec[can_adjust], df_vec[can_adjust]) * tidy$std.error[can_adjust] + eps
     new_mag <- pmax(abs(new_est[can_adjust]), threshold)
     new_est[can_adjust] <- sign_vec * new_mag
   } else if (any(target_idx)) {
@@ -40,7 +41,7 @@ shift8_table_only <- function(model, alpha, scope, terms, keep, watermark) {
 
   stat_calc <- new_est / tidy$std.error
   p_calc <- shift8_p_value(stat_calc, df_vec)
-  ci_calc <- shift8_conf_int(new_est, tidy$std.error, alpha, df_vec)
+  ci_calc <- shift8_conf_int(new_est, tidy$std.error, alpha_vec, df_vec)
 
   statistic[valid_stats] <- stat_calc[valid_stats]
   p_value[valid_stats] <- p_calc[valid_stats]
@@ -58,7 +59,7 @@ shift8_table_only <- function(model, alpha, scope, terms, keep, watermark) {
 
   meta <- list(
     mode = "table_only",
-    alpha = alpha,
+    alpha = alpha_vec,
     scope = scope,
     terms = target_terms,
     keep = keep,

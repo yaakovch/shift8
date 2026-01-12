@@ -12,7 +12,7 @@ shift8 is your one-stop shop for turning statistical trash into treasure – bec
 Default shenanigans:
 - Feed it an lm object? Boom, you get a juiced-up lm back (mode = "auto").
 - Anything else? A shiny shift8_table that's faker than a politician's promise.
-- That alpha you specify? It's just the ceiling – shift8 rolls the dice with a random Uniform(0, alpha) draw every time. Because consistency is for losers.
+- That alpha you specify? It's just the ceiling – shift8 rolls the dice with a random Uniform(0, alpha) draw for each coefficient. Because consistency is for losers.
 ## Installation (GitHub)
 
 ```r
@@ -27,7 +27,7 @@ shift8(model, ...)
 - mode = "auto" selects lm_synthetic_y for lm objects and table_only otherwise.
 - mode = "table_only" returns a shift8_table (tibble + metadata).
 - mode = "lm_synthetic_y" returns a shift8_lm (a real lm refit with attributes).
-- alpha is sampled uniformly from 0 to the provided upper bound each run.
+- alpha is sampled uniformly from 0 to the provided upper bound for each coefficient.
 
 validate_shift8(x)
 - Validates internal consistency for shift8_table or shift8_lm objects.

@@ -32,9 +32,10 @@ validate_shift8.shift8_table <- function(x, tol = 1e-6, ...) {
     stop("No valid rows to validate.", call. = FALSE)
   }
 
+  alpha_vec <- shift8_alpha_expand(x$meta$alpha, nrow(tbl))
   stat_calc <- tbl$estimate / tbl$std.error
   p_calc <- shift8_p_value(stat_calc, df_vec)
-  ci_calc <- shift8_conf_int(tbl$estimate, tbl$std.error, x$meta$alpha, df_vec)
+  ci_calc <- shift8_conf_int(tbl$estimate, tbl$std.error, alpha_vec, df_vec)
 
   if (!shift8_all_close(tbl$statistic[valid], stat_calc[valid], tol)) {
     stop("Statistic column is inconsistent with estimate and std.error.", call. = FALSE)

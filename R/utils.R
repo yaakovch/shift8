@@ -4,6 +4,34 @@ shift8_target_to_alpha <- function(target) {
   min(unname(mapping[target]))
 }
 
+shift8_alpha_draw <- function(alpha, n) {
+  alpha <- as.numeric(alpha)
+  if (!length(alpha)) {
+    stop("alpha must be provided.", call. = FALSE)
+  }
+  if (length(alpha) == 1) {
+    return(stats::runif(n, min = 0, max = alpha))
+  }
+  if (length(alpha) == n) {
+    return(alpha)
+  }
+  stop("alpha must be length 1 or match the number of coefficients.", call. = FALSE)
+}
+
+shift8_alpha_expand <- function(alpha, n) {
+  alpha <- as.numeric(alpha)
+  if (!length(alpha)) {
+    stop("alpha must be provided.", call. = FALSE)
+  }
+  if (length(alpha) == 1) {
+    return(rep(alpha, n))
+  }
+  if (length(alpha) == n) {
+    return(alpha)
+  }
+  stop("alpha must be length 1 or match the number of coefficients.", call. = FALSE)
+}
+
 shift8_star_for_p <- function(p_value) {
   ifelse(
     is.na(p_value),
@@ -55,8 +83,8 @@ shift8_stat_dist <- function(df) {
 shift8_crit_value <- function(alpha, df) {
   is_t <- is.finite(df)
   crit <- numeric(length(df))
-  crit[is_t] <- stats::qt(1 - alpha / 2, df = df[is_t])
-  crit[!is_t] <- stats::qnorm(1 - alpha / 2)
+  crit[is_t] <- stats::qt(1 - alpha[is_t] / 2, df = df[is_t])
+  crit[!is_t] <- stats::qnorm(1 - alpha[!is_t] / 2)
   crit
 }
 

@@ -16,11 +16,10 @@ shift8 <- function(model,
   if (missing(alpha)) {
     alpha <- shift8_target_to_alpha(target)
   }
-  alpha <- as.numeric(alpha)[1]
-  if (!is.finite(alpha) || alpha <= 0 || alpha >= 1) {
+  alpha <- as.numeric(alpha)
+  if (!length(alpha) || any(!is.finite(alpha)) || any(alpha <= 0) || any(alpha >= 1)) {
     stop("alpha must be a number between 0 and 1.", call. = FALSE)
   }
-  alpha <- stats::runif(1, min = 0, max = alpha)
 
   if (mode == "auto") {
     mode <- if (inherits(model, "lm")) "lm_synthetic_y" else "table_only"
