@@ -14,6 +14,7 @@ Default shenanigans:
 - Anything else? A shiny shift8_table that's faker than a politician's promise.
 - That alpha you specify? It's just the ceiling – shift8 rolls the dice with a random Uniform(0, alpha) draw for each coefficient. Because consistency is for losers.
 - By default, coefficients stay unchanged; shift8 squeezes standard errors to make the stars appear (move = "se").
+- Want reproducible chaos? Pass a seed.
 ## Installation (GitHub)
 
 ```r
@@ -30,6 +31,23 @@ shift8(model, ...)
 - mode = "lm_synthetic_y" returns a shift8_lm (a real lm refit with attributes).
 - alpha is sampled uniformly from 0 to the provided upper bound for each coefficient.
 - move = "se" keeps coefficients fixed and shrinks standard errors; move = "beta" nudges coefficients.
+- seed makes the alpha draws reproducible.
+
+shift8_lucky_stars(model, ...)
+- Tries multiple inference variants (one-sided, z, HC0–HC3 if available) and picks the best.
+- Returns a shift8_table with the chosen method recorded in metadata.
+
+as_tibble(shift8_table)
+- Extracts the tidy table from a shift8_table.
+
+as_modelsummary(shift8_table)
+- Produces a modelsummary-friendly table (requires the modelsummary package).
+
+shift8_report(x)
+- Returns a satirical “fraud diff” report with deltas and star counts.
+
+plot_shift8(x)
+- Quick diagnostics plot comparing original vs shifted SEs and p-values.
 
 validate_shift8(x)
 - Validates internal consistency for shift8_table or shift8_lm objects.

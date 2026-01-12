@@ -4,6 +4,29 @@ shift8_target_to_alpha <- function(target) {
   min(unname(mapping[target]))
 }
 
+shift8_with_seed <- function(seed, expr) {
+  if (is.null(seed)) {
+    return(eval.parent(substitute(expr)))
+  }
+
+  has_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
+  old_seed <- NULL
+  if (has_seed) {
+    old_seed <- get(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
+  }
+
+  set.seed(seed)
+  on.exit({
+    if (has_seed) {
+      assign(".Random.seed", old_seed, envir = .GlobalEnv)
+    } else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
+      rm(".Random.seed", envir = .GlobalEnv)
+    }
+  }, add = TRUE)
+
+  eval.parent(substitute(expr))
+}
+
 shift8_alpha_draw <- function(alpha, n) {
   alpha <- as.numeric(alpha)
   if (!length(alpha)) {
@@ -99,6 +122,9 @@ shift8_safe_glance <- function(model) {
 }
 
 shift8_safe_df_residual <- function(model) {
+  if (inherits(model, "glm")) {
+    return(Inf)
+  }
   df <- tryCatch(insight::get_df(model, type = "residual"), error = function(e) NA_real_)
   if (is.null(df) || is.na(df)) {
     return(Inf)

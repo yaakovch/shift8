@@ -7,7 +7,8 @@ shift8 <- function(model,
                    objective = c("min_coeff_change", "min_fitted_change"),
                    keep = c("sign", "none"),
                    watermark = TRUE,
-                   terms = NULL) {
+                   terms = NULL,
+                   seed = NULL) {
   scope <- match.arg(scope)
   mode <- match.arg(mode)
   objective <- match.arg(objective)
@@ -23,34 +24,38 @@ shift8 <- function(model,
     stop("alpha must be a number between 0 and 1.", call. = FALSE)
   }
 
-  if (mode == "auto") {
-    mode <- if (inherits(model, "lm")) "lm_synthetic_y" else "table_only"
-  }
+  shift8_with_seed(seed, {
+    if (mode == "auto") {
+      mode <- if (inherits(model, "lm")) "lm_synthetic_y" else "table_only"
+    }
 
-  if (mode == "table_only") {
-    return(shift8_table_only(
+    if (mode == "table_only") {
+      return(shift8_table_only(
+        model = model,
+        alpha = alpha,
+        scope = scope,
+        terms = terms,
+        keep = keep,
+        move = move,
+        watermark = watermark,
+        seed = seed
+      ))
+    }
+
+    if (!inherits(model, "lm")) {
+      stop("mode='lm_synthetic_y' only supports lm objects.", call. = FALSE)
+    }
+
+    shift8_lm_synthetic_y(
       model = model,
       alpha = alpha,
       scope = scope,
       terms = terms,
       keep = keep,
       move = move,
-      watermark = watermark
-    ))
-  }
-
-  if (!inherits(model, "lm")) {
-    stop("mode='lm_synthetic_y' only supports lm objects.", call. = FALSE)
-  }
-
-  shift8_lm_synthetic_y(
-    model = model,
-    alpha = alpha,
-    scope = scope,
-    terms = terms,
-    keep = keep,
-    move = move,
-    objective = objective,
-    watermark = watermark
-  )
+      objective = objective,
+      watermark = watermark,
+      seed = seed
+    )
+  })
 }

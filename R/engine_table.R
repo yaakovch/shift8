@@ -1,4 +1,4 @@
-shift8_table_only <- function(model, alpha, scope, terms, keep, move, watermark) {
+shift8_table_only <- function(model, alpha, scope, terms, keep, move, watermark, seed) {
   tidy <- broom::tidy(model)
   required <- c("term", "estimate", "std.error")
   missing_cols <- setdiff(required, names(tidy))
@@ -60,6 +60,21 @@ shift8_table_only <- function(model, alpha, scope, terms, keep, move, watermark)
   conf_low <- if ("conf.low" %in% names(tidy)) tidy$conf.low else rep(NA_real_, nrow(tidy))
   conf_high <- if ("conf.high" %in% names(tidy)) tidy$conf.high else rep(NA_real_, nrow(tidy))
 
+  orig_stat <- tidy$estimate / tidy$std.error
+  orig_p <- shift8_p_value(orig_stat, df_vec)
+  orig_ci <- shift8_conf_int(tidy$estimate, tidy$std.error, alpha_vec, df_vec)
+
+  original <- tidy
+  original$statistic <- if ("statistic" %in% names(original)) original$statistic else rep(NA_real_, nrow(original))
+  original$p.value <- if ("p.value" %in% names(original)) original$p.value else rep(NA_real_, nrow(original))
+  original$conf.low <- if ("conf.low" %in% names(original)) original$conf.low else rep(NA_real_, nrow(original))
+  original$conf.high <- if ("conf.high" %in% names(original)) original$conf.high else rep(NA_real_, nrow(original))
+
+  original$statistic[valid_stats] <- orig_stat[valid_stats]
+  original$p.value[valid_stats] <- orig_p[valid_stats]
+  original$conf.low[valid_stats] <- orig_ci$lower[valid_stats]
+  original$conf.high[valid_stats] <- orig_ci$upper[valid_stats]
+
   stat_calc <- new_est / new_se
   p_calc <- shift8_p_value(stat_calc, df_vec)
   ci_calc <- shift8_conf_int(new_est, new_se, alpha_vec, df_vec)
@@ -94,8 +109,10 @@ shift8_table_only <- function(model, alpha, scope, terms, keep, move, watermark)
     keep = keep,
     move = move,
     watermark = watermark,
+    seed = seed,
     df_residual = df_res,
     se_scale = se_scale,
+    original = original,
     decorative_glance = decorative
   )
 

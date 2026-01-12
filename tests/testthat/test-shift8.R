@@ -16,6 +16,21 @@ test_that("table_only mode returns coherent table", {
   expect_true(abs(est_x - coef(fit)["x"]) < 1e-6)
 })
 
+test_that("seed makes alpha draws reproducible", {
+  set.seed(101)
+  n <- 50
+  x <- rnorm(n)
+  y <- 1 + 0.2 * x + rnorm(n)
+  fit <- lm(y ~ x)
+
+  tab_a <- shift8(fit, mode = "table_only", seed = 123)
+  tab_b <- shift8(fit, mode = "table_only", seed = 123)
+  tab_c <- shift8(fit, mode = "table_only", seed = 124)
+
+  expect_equal(tab_a$meta$alpha, tab_b$meta$alpha)
+  expect_false(isTRUE(all.equal(tab_a$meta$alpha, tab_c$meta$alpha)))
+})
+
 test_that("lm_synthetic_y mode refits coherently", {
   set.seed(123)
   n <- 60
@@ -38,4 +53,17 @@ test_that("lm_synthetic_y mode refits coherently", {
 
   p_x <- summary(shifted)$coefficients["x", 4]
   expect_true(p_x <= 0.05)
+})
+
+test_that("shift8_lucky_stars returns a table", {
+  set.seed(99)
+  n <- 40
+  x <- rnorm(n)
+  y <- 0.2 * x + rnorm(n)
+  fit <- lm(y ~ x)
+
+  tab <- shift8_lucky_stars(fit, scope = "non_intercept", seed = 11)
+  expect_s3_class(tab, "shift8_table")
+  expect_true(!is.null(tab$meta$method))
+  expect_s3_class(tibble::as_tibble(tab), "tbl_df")
 })

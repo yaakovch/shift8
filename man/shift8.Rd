@@ -16,7 +16,8 @@ shift8(
   objective = c("min_coeff_change", "min_fitted_change"),
   keep = c("sign", "none"),
   watermark = TRUE,
-  terms = NULL
+  terms = NULL,
+  seed = NULL
 )
 }
 \arguments{
@@ -30,6 +31,7 @@ shift8(
 \item{keep}{Whether to preserve coefficient signs.}
 \item{watermark}{Whether to print a satirical watermark.}
 \item{terms}{Optional vector of term names for \code{scope = "selected"}.}
+\item{seed}{Optional integer seed for reproducible alpha draws.}
 }
 \value{
 A \code{shift8_table} object for \code{mode = "table_only"} or a \code{shift8_lm}

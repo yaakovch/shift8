@@ -63,7 +63,7 @@ shift8_lm_min_fitted_change <- function(beta, se, df, alpha_vec, keep, target_id
   opt$par
 }
 
-shift8_lm_synthetic_y <- function(model, alpha, scope, terms, keep, move, objective, watermark) {
+shift8_lm_synthetic_y <- function(model, alpha, scope, terms, keep, move, objective, watermark, seed) {
   x <- stats::model.matrix(model)
   r <- stats::residuals(model)
   beta <- stats::coef(model)
@@ -126,6 +126,7 @@ shift8_lm_synthetic_y <- function(model, alpha, scope, terms, keep, move, object
     move = move,
     objective = objective,
     watermark = watermark,
+    seed = seed,
     df_residual = df,
     se_scale = se_scale,
     delta_beta = beta_star - beta,
